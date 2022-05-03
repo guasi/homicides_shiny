@@ -1,0 +1,8 @@
+Title: WHO Homicide Estimates 
+Author: Ingrid Lagos
+AuthorUrl: http://ilagos.rstudio.io/
+License: GPL-3
+DisplayMode: Showcase
+Description: My first shiny app using WHO and UN data
+Tags: getting-started, WHO homicides
+Type: Shiny
