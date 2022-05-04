@@ -71,4 +71,7 @@ hom_btsx_gdp <- homicides %>%
   filter(sex == "BTSX") %>% 
   left_join(gdp)
 
+max_yr <- max(homicides$year)
+min_yr <- min(homicides$year)
+
 rm(countries,m49iso3,population,gdp)

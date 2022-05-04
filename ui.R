@@ -9,7 +9,7 @@ shinyUI(fluidPage(
                   selected = NULL,
                   multiple = T),
       uiOutput("ui_country"),
-      p("When region is selected, countries with highest homicide rates in region automatically display. You can remove or add countries in the list."),
+      p("When region is selected, countries with highest homicide rates in region automatically display. You can add/remove countries to display."),
       
       conditionalPanel(condition = "input.tabs == 'GDP'",
                       sliderInput("s_year","Year",
@@ -29,8 +29,8 @@ shinyUI(fluidPage(
         tabPanel("GDP",plotOutput("plot_gdp"))
       ),
       HTML("<hr><small>Sources:
-        <a href='http://data.un.org/Data.aspx?d=SNAAMA&f=grID:101;currID:USD;pcFlag:0;itID:9&c=2,3,5,6&s=_crEngNameOrderBy:asc,yr:desc&v=1'>UN GDP</a>,
         <a href='https://apps.who.int/gho/data/node.imr.VIOLENCE_HOMICIDENUM'>WHO estimates of number of homicides</a>,
+        <a href='http://data.un.org/Data.aspx?d=SNAAMA&f=grID:101;currID:USD;pcFlag:0;itID:9&c=2,3,5,6&s=_crEngNameOrderBy:asc,yr:desc&v=1'>UN GDP</a>,
         <a href='https://population.un.org/wpp/Download/Standard/Population/'>UN world population prospects</a>
           </small>"
       )
