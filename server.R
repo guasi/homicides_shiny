@@ -1,5 +1,5 @@
 shinyServer(function(input, output, session) {
-  # session functions and vars
+
   uniform_plot <- function(p) {
     p + 
     labs(y = "homicides per 100,000") +
@@ -10,7 +10,7 @@ shinyServer(function(input, output, session) {
   
   r <- reactiveValues()
 
-  # inputs (observes and events)
+  # update reactive values upon region and tab selected
   observe({
     ifelse(input$tabs == "Sex", data <- homicides, data <- hom_btsx_gdp)
     if (is.null(input$s_region)) {
@@ -22,12 +22,8 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  observeEvent(input$b_clear, {
-    updateSelectInput(session,"s_region",selected = character(0))
-  })
-  
-  # outputs
-  output$ui_country <- renderUI({
+  # update country select upon region selected
+  observe({
     ranked <- hom_btsx_gdp %>% 
       filter(region %in% input$s_region) %>% 
       group_by(country) %>% 
@@ -35,11 +31,14 @@ shinyServer(function(input, output, session) {
       mutate(rank = rank(rate)) %>% 
       arrange(desc(rank)) %>% 
       .$country
-    
-      selectInput("s_country","Country",
-                  choices = ranked,
-                  selected = ranked[1:8],
-                  multiple = T)
+    updateSelectInput(session,"s_country",
+                      choices = ranked,
+                      selected = ranked[1:8])
+  })
+  
+  #update region select upon button click
+  observeEvent(input$b_clear, {
+    updateSelectInput(session,"s_region",selected = character(0))
   })
   
   output$plot_latest <- renderPlot({
@@ -103,5 +102,4 @@ shinyServer(function(input, output, session) {
            color = NULL) 
     uniform_plot(p)
   })
-
 })

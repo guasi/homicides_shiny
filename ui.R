@@ -8,7 +8,10 @@ shinyUI(fluidPage(
                   choices = unique(homicides$region),
                   selected = NULL,
                   multiple = T),
-      uiOutput("ui_country"),
+      selectInput("s_country","Country",
+                  choices = NULL,
+                  selected = NULL,
+                  multiple = T),
       p("When region is selected, countries with highest homicide rates in region automatically display. You can add/remove countries to display."),
       
       conditionalPanel(condition = "input.tabs == 'GDP'",
