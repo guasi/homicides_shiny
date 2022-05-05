@@ -4,32 +4,38 @@ shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      selectInput("s_region","Region",
-                  choices = unique(homicides$region),
-                  selected = NULL,
-                  multiple = T),
-      selectInput("s_country","Country",
-                  choices = NULL,
-                  selected = NULL,
-                  multiple = T),
-      p("When region is selected, countries with highest homicide rates in region automatically display. You can add/remove countries to display."),
-      
-      conditionalPanel(condition = "input.tabs == 'GDP'",
-                      sliderInput("s_year","Year",
-                                  min = min(homicides$year),
-                                  max = max(homicides$year),
-                                  value = 2000,
-                                  sep = "",
-                                  animate = T)),
-      actionButton("b_clear","clear filters")
+      conditionalPanel(condition = "input.tabs != 'Overall'",
+        selectInput("s_region","Region",
+                    choices = unique(homicides$region),
+                    selected = NULL,
+                    multiple = T),
+        selectInput("s_country","Country",
+                    choices = NULL,
+                    selected = NULL,
+                    multiple = T),
+        p("When region is selected, countries with highest homicide rates in region automatically display. You can add/remove countries to display."),
+        
+        conditionalPanel(condition = "input.tabs == 'Related to GDP'",
+                        sliderInput("s_year","Year",
+                                    min = min(homicides$year),
+                                    max = max(homicides$year),
+                                    value = 2000,
+                                    sep = "",
+                                    animate = T)),
+        actionButton("b_clear","clear filters")
+      ),
+      conditionalPanel(condition = "input.tabs == 'Overall'",
+        p("Homicide rates seem to be lowering in all regions except in the Americas, where rates have stayed the same for the last twenty years. A handfull of countries in the world have extremely high rates.")
+      )
     ),
     
     mainPanel(
       tabsetPanel(id = "tabs",
-        tabPanel("Latest",plotOutput("plot_latest")),
+        tabPanel("Latest Year",plotOutput("plot_latest")),
         tabPanel("Historical",plotOutput("plot_historical")),
-        tabPanel("Sex",plotOutput("plot_sex")),
-        tabPanel("GDP",plotOutput("plot_gdp"))
+        tabPanel("By Sex",plotOutput("plot_sex")),
+        tabPanel("Related to GDP",plotOutput("plot_gdp")),
+        tabPanel("Overall",plotOutput("plot_overall"))
       ),
       HTML("<hr><small>Sources:
         <a href='https://apps.who.int/gho/data/node.imr.VIOLENCE_HOMICIDENUM'>WHO estimates of number of homicides</a>,

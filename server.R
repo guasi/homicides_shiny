@@ -12,7 +12,7 @@ shinyServer(function(input, output, session) {
 
   # update reactive values upon region and tab selected
   observe({
-    ifelse(input$tabs == "Sex", data <- homicides, data <- hom_btsx_gdp)
+    ifelse(input$tabs == "By Sex", data <- homicides, data <- hom_btsx_gdp)
     if (is.null(input$s_region)) {
       r$group <- "region"
       r$df <- data
@@ -59,7 +59,7 @@ shinyServer(function(input, output, session) {
       group_by(.data[[r$group]],year) %>% 
       summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
       ggplot(aes(year,rate)) +
-      geom_line(aes(color = .data[[r$group]])) +
+      geom_line(aes(color = reorder(.data[[r$group]],desc(rate)))) +
       labs(x = NULL,
            title = paste(min_yr,"to",max_yr),
            color = NULL)
@@ -100,6 +100,18 @@ shinyServer(function(input, output, session) {
       labs(x = "GDP in billions",
            title = input$s_year,
            color = NULL) 
+    uniform_plot(p)
+  })
+  
+  output$plot_overall <- renderPlot({
+    p <- hom_btsx_gdp %>% 
+      group_by(region, country, year) %>% 
+      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
+      ggplot(aes(year,rate)) +
+      geom_line(aes(group = country), color = "gray") +
+      geom_smooth(aes(color = reorder(region,desc(rate))), se = FALSE) +
+      labs(title = paste(min_yr,"to",max_yr),
+           color = NULL)
     uniform_plot(p)
   })
 })
