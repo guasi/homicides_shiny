@@ -4,7 +4,7 @@ shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      conditionalPanel(condition = "input.tabs != 'Overall'",
+      conditionalPanel(condition = "input.tabs != 'Overall' & input.tabs != 'Map'",
         selectInput("s_region","Region",
                     choices = unique(homicides$region),
                     selected = NULL,
@@ -24,7 +24,7 @@ shinyUI(fluidPage(
                                     animate = T)),
         actionButton("b_clear","clear filters")
       ),
-      conditionalPanel(condition = "input.tabs == 'Overall'",
+      conditionalPanel(condition = "input.tabs == 'Overall' | input.tabs == 'Map'",
         p("Homicide rates seem to be lowering in all regions except in the Americas, where rates have stayed the same for the last twenty years. A handfull of countries in the world have extremely high rates.")
       )
     ),
@@ -35,7 +35,8 @@ shinyUI(fluidPage(
         tabPanel("Historical",plotOutput("plot_historical")),
         tabPanel("By Sex",plotOutput("plot_sex")),
         tabPanel("Related to GDP",plotOutput("plot_gdp")),
-        tabPanel("Overall",plotOutput("plot_overall"))
+        tabPanel("Overall",plotOutput("plot_overall")),
+        tabPanel("Map",leafletOutput("map_choropleth"))
       ),
       HTML("<hr><small>Sources:
         <a href='https://apps.who.int/gho/data/node.imr.VIOLENCE_HOMICIDENUM'>WHO estimates of number of homicides</a>,
