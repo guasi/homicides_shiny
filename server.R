@@ -9,7 +9,6 @@ shinyServer(function(input, output, session) {
   }
   
   r <- reactiveValues()
-  r$b_all_toggle <- F
 
   # update reactive values upon region and tab selected
   observe({
@@ -32,8 +31,7 @@ shinyServer(function(input, output, session) {
       mutate(rank = rank(rate)) %>% 
       arrange(desc(rank)) %>% 
       .$country
-    slctd <- ranked[1:8]
-    if (r$b_all_toggle) slctd <- ranked
+    ifelse (input$ck_all, slctd <- ranked, slctd <- ranked[1:8])
     updateSelectInput(session,"s_country",
                       choices = ranked,
                       selected = slctd)
@@ -42,13 +40,6 @@ shinyServer(function(input, output, session) {
   #update region select upon button click
   observeEvent(input$b_clear, {
     updateSelectInput(session, "s_region", selected = character(0))
-    r$b_all_toggle <- F
-  })
-  
-  #update region/country select upon button click
-  observeEvent(input$b_all, {
-    updateSelectInput(session, "s_region", selected = unique(homicides$region))
-    r$b_all_toggle <- T
   })
   
   output$plot_latest <- renderPlot({
@@ -98,7 +89,7 @@ shinyServer(function(input, output, session) {
     p <- r$df %>% 
       filter(year == input$s_year, !is.na(gdp_ppp)) %>% 
       group_by(.data[[r$group]]) %>% 
-      summarise(gdp_ppp = mean(gdp_ppp, na.rm = T),
+      summarise(gdp_ppp = median(gdp_ppp, na.rm = T),
                 pop = sum(pop),
                 rate = 100*sum(cases)/pop, .groups = "drop")  %>% 
       ggplot(aes(gdp_ppp, rate)) +
@@ -113,6 +104,18 @@ shinyServer(function(input, output, session) {
     nvars <- n_distinct(r$df[[r$group]])
     uniform_plot(p,nvars)
   })
+  
+  output$plot_histogram <- renderPlot({
+    hom_btsx_gdp %>% 
+      filter(year == max_yr) %>% 
+      group_by(country) %>% 
+      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
+      ggplot(aes(rate)) +
+      geom_histogram(binwidth = 4, fill = "#428bca", alpha = 2/3) +
+      labs(x = "homicides per 100,000",
+           title = max_yr) +
+      theme_minimal()
+  }) 
   
   output$plot_overall <- renderPlot({
     p <- hom_btsx_gdp %>% 
