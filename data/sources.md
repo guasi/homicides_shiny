@@ -7,9 +7,9 @@
 
 ### UN Gross Domestic Product
 
-- *file:* UNdata_Export_GDP.csv
-- *source:* http://data.un.org/Data.aspx?d=SNAAMA&f=grID:101;currID:USD;pcFlag:0;itID:9&c=2,3,5,6&s=_crEngNameOrderBy:asc,yr:desc&v=1
-- *Glossary:* GDP by Type of Expenditure at current prices - US dollars. GDP at current prices. Gross domestic product (GDP) at current prices is GDP at prices of the current reporting period. Also known as nominal GDP
+- *file:* UNdata_Export_GDP_PerCap.csv
+- *source:* https://data.un.org/Data.aspx?q=gdp&d=WDI&f=Indicator_Code:NY.GDP.PCAP.PP.CD&c=2,4,5&s=Country_Name:asc,Year:desc&v=1
+- *Glossary:* GDP per head calculated as the aggregate of production (GDP) divided by the population size. A purchasing power parity (PPP) is a price relative which measures the number of units of country B’s currency that are needed in country B to purchase the same quantity of an individual good or service as 1 unit of country A’s currency will purchase in country A.
 
 ### WHO country codes
 

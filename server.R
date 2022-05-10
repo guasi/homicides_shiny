@@ -1,14 +1,15 @@
 shinyServer(function(input, output, session) {
 
-  uniform_plot <- function(p) {
+  uniform_plot <- function(p,ns = 1) {
     p + 
     labs(y = "homicides per 100,000") +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 1), 
-          legend.position = "bottom")
+          legend.position = ifelse(ns <= 15, "bottom", "none"))
   }
   
   r <- reactiveValues()
+  r$b_all_toggle <- F
 
   # update reactive values upon region and tab selected
   observe({
@@ -31,14 +32,23 @@ shinyServer(function(input, output, session) {
       mutate(rank = rank(rate)) %>% 
       arrange(desc(rank)) %>% 
       .$country
+    slctd <- ranked[1:8]
+    if (r$b_all_toggle) slctd <- ranked
     updateSelectInput(session,"s_country",
                       choices = ranked,
-                      selected = ranked[1:8])
+                      selected = slctd)
   })
   
   #update region select upon button click
   observeEvent(input$b_clear, {
     updateSelectInput(session, "s_region", selected = character(0))
+    r$b_all_toggle <- F
+  })
+  
+  #update region/country select upon button click
+  observeEvent(input$b_all, {
+    updateSelectInput(session, "s_region", selected = unique(homicides$region))
+    r$b_all_toggle <- T
   })
   
   output$plot_latest <- renderPlot({
@@ -47,7 +57,7 @@ shinyServer(function(input, output, session) {
       group_by(.data[[r$group]]) %>% 
       summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
       ggplot(aes(reorder(.data[[r$group]], rate), rate)) +
-      geom_bar(stat = "identity", fill = "#7C7BB2", alpha = 2/3) +
+      geom_bar(stat = "identity", fill = "#428bca", alpha = 2/3) +
       coord_flip() +
       labs(x = NULL,
            title = max_yr)
@@ -63,7 +73,8 @@ shinyServer(function(input, output, session) {
       labs(x = NULL,
            title = paste(min_yr, "to", max_yr),
            color = NULL)
-    uniform_plot(p)
+    nvars <- n_distinct(r$df[[r$group]])
+    uniform_plot(p,nvars)
   })
   
   output$plot_sex <- renderPlot({
@@ -84,23 +95,23 @@ shinyServer(function(input, output, session) {
   })
   
   output$plot_gdp <- renderPlot({
-    ifelse(is.null(input$s_region), lx <- c(0,3.4e4), lx <- c(0, 2e3))
     p <- r$df %>% 
-      filter(year == input$s_year) %>% 
+      filter(year == input$s_year, !is.na(gdp_ppp)) %>% 
       group_by(.data[[r$group]]) %>% 
-      summarise(gross = sum(gross, na.rm = T)/1e9,
+      summarise(gdp_ppp = mean(gdp_ppp, na.rm = T),
                 pop = sum(pop),
                 rate = 100*sum(cases)/pop, .groups = "drop")  %>% 
-      ggplot(aes(gross, rate)) +
+      ggplot(aes(gdp_ppp, rate)) +
       geom_point(aes(color = .data[[r$group]], size = pop), alpha = 2/3) +
       guides(size = "none") +
-      scale_x_continuous(limits = lx) +
+      scale_x_continuous(limits = c(250,142e3)) +
       scale_y_continuous(limits = c(0,100)) +
       scale_size_continuous(range = c(1,15)) +
-      labs(x = "GDP in billions",
+      labs(x = "GDP per capita, PPP, in current international $",
            title = input$s_year,
-           color = NULL) 
-    uniform_plot(p)
+           color = NULL)
+    nvars <- n_distinct(r$df[[r$group]])
+    uniform_plot(p,nvars)
   })
   
   output$plot_overall <- renderPlot({
@@ -126,7 +137,7 @@ shinyServer(function(input, output, session) {
     world_sf <- left_join(world_sf, rates, by = c("GID_0" = "iso3"))
     
     bins <- c(0,5,10,20,40,100)
-    pal <- colorBin("Purples", domain = world_sf$rate, bins = bins)
+    pal <- colorBin("Oranges", domain = world_sf$rate, bins = bins)
     labels <- 
       sprintf("<strong>%s</strong><br/>rate %g", world_sf$NAME_0, world_sf$rate) %>% 
       lapply(htmltools::HTML)
@@ -155,4 +166,5 @@ shinyServer(function(input, output, session) {
                 opacity = 1)
     
   })
+  
 })

@@ -58,18 +58,17 @@ population <-
   tidyr::pivot_longer(cols=c("MLE","FMLE","BTSX"),names_to = "sex",values_to="pop") %>% 
   select(m49,year,sex,pop)
   
-# UN GDP at current prices in dollars
-# https://data.un.org/Data.aspx?d=SNAAMA&f=grID:101;currID:USD;pcFlag:1;crID%3&c=2,3,5,6&s=_crEngNameOrderBy:asc,yr:desc&v=1
+# UN GDP per capita, PPP at current international $
+# https://data.un.org/Data.aspx?q=gdp&d=WDI&f=Indicator_Code:NY.GDP.PCAP.PP.CD&c=2,4,5&s=Country_Name:asc,Year:desc&v=1
 gdp <- 
-  read_csv("data/UNdata_Export_GDP.csv") %>% 
+  read_csv("data/UNdata_Export_GDP_PerCap.csv") %>% 
   select(`Country or Area Code`,
          Year,
          Value) %>% 
-  rename(m49 = `Country or Area Code`,
+  rename(iso3 = `Country or Area Code`,
          year = Year,
-         gross = Value) %>%
-  mutate(m49 = replace(m49, m49 == 835, 834)) %>% #Map Tanzania Mainland 835 to Tanzania 834
-  select(m49, year, gross)
+         gdp_ppp = Value) %>%
+  select(iso3, year, gdp_ppp)
 
 homicides <- homicides %>% 
   left_join(population)
