@@ -6,7 +6,7 @@ shinyUI(fluidPage(
     sidebarPanel(
       conditionalPanel(condition = "input.tabs != 'Overall' & input.tabs != 'Map'",
         selectInput("s_region","Region",
-                    choices = unique(homicides$region),
+                    choices = REGIONS,
                     selected = NULL,
                     multiple = T,
                     selectize = F),
@@ -16,7 +16,7 @@ shinyUI(fluidPage(
                     multiple = T,
                     selectize = F),
         checkboxInput("ck_all", "Select all countries", value = F),
-        actionButton("b_clear","clear filters", class = "btn-primary btn-sm")
+        actionButton("b_clear","clear filters", class = "btn-warning btn-sm")
       ),
       conditionalPanel(condition = "input.tabs == 'Overall' | input.tabs == 'Map'",
         p("Homicide rates seem to be lowering in all regions except in the Americas, where rates have stayed the same for the last twenty years. A handfull of countries in the world have extremely high rates.")

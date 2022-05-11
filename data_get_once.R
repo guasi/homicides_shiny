@@ -65,18 +65,16 @@ gdp <-
          Value) %>% 
   rename(iso3 = `Country or Area Code`,
          year = Year,
-         gdp_ppp = Value) %>%
-  select(iso3, year, gdp_ppp)
+         gdp_ppp = Value) %>% 
+  mutate(sex = "BTSX") %>% 
+  select(iso3, year, sex, gdp_ppp)
 
-homicides <- homicides %>% 
-  left_join(population)
+data_country_s <- homicides %>% 
+  left_join(population) %>% 
+  left_join(gdp) %>% 
+  mutate(rate = round(100*cases/pop,2)) %>% 
+  select(iso3, m49, country, region, year, sex, cases, pop, rate, gdp_ppp)
 
-#filter population and homicides by both sexes and add GDP
-hom_btsx_gdp <- homicides %>% 
-  filter(sex == "BTSX") %>% 
-  left_join(gdp)
+saveRDS(data_country_s,"data/data_country_s.rds")
 
-saveRDS(hom_btsx_gdp,"data/hom_btsx_gdp.rds")
-saveRDS(homicides,"data/homicides.rds")
-
-rm(countries,m49iso3,population,gdp)
+rm(countries,m49iso3,population,gdp,homicides)

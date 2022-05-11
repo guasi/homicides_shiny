@@ -11,31 +11,30 @@ shinyServer(function(input, output, session) {
   # initialize selections
   r <- reactiveValues(
     group = sym("region"),
-    df = hom_btsx_gdp
+    df = data_region_s
   )
 
   # update reactive values upon region and tab selected
-  observe({
-    ifelse(input$tabs == "By Sex", data <- homicides, data <- hom_btsx_gdp)
+  observeEvent(c(input$s_region,input$s_country), {
     if (is.null(input$s_region)) {
       r$group <- sym("region")
-      r$df <- data
+      r$df <- data_region_s
     } else {
       r$group <- sym("country")
-      r$df <- data %>% filter(country %in% input$s_country)
+      r$df <- data_country_s %>% filter(country %in% input$s_country) 
     }
   })
-  
+    
   # update country select upon region selected
   observe({
-    ranked <- hom_btsx_gdp %>% 
+    ranked <- data_country %>% 
       filter(region %in% input$s_region) %>% 
       group_by(country) %>% 
-      summarise(rate = sum(cases)/sum(pop), .groups = "drop") %>% 
+      summarise(rate = median(rate), .groups = "drop") %>% 
       mutate(rank = rank(rate)) %>% 
       arrange(desc(rank)) %>% 
       .$country
-    ifelse (input$ck_all, slctd <- ranked, slctd <- ranked[1:8])
+    ifelse(input$ck_all, slctd <- ranked, slctd <- ranked[1:8])
     updateSelectInput(session,"s_country",
                       choices = ranked,
                       selected = slctd)
@@ -48,9 +47,7 @@ shinyServer(function(input, output, session) {
   
   output$plot_latest <- renderPlot({
     p <- r$df %>% 
-      filter(year == MAX_YR) %>% 
-      group_by(.data[[r$group]]) %>% 
-      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
+      filter(sex == "BTSX", year == MAX_YR) %>% 
       ggplot(aes(reorder(.data[[r$group]], rate), rate)) +
       geom_bar(stat = "identity", fill = COLOR_BLUE, alpha = 2/3) +
       coord_flip() +
@@ -61,8 +58,7 @@ shinyServer(function(input, output, session) {
   
   output$plot_historical <- renderPlot({
     p <- r$df %>% 
-      group_by(.data[[r$group]], year) %>% 
-      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
+      filter(sex == "BTSX") %>% 
       ggplot(aes(year, rate)) +
       geom_line(aes(color = reorder(.data[[r$group]], desc(rate)))) +
       labs(x = NULL,
@@ -75,8 +71,6 @@ shinyServer(function(input, output, session) {
   output$plot_sex <- renderPlot({
     p <- r$df %>% 
       filter(year == MAX_YR) %>% 
-      group_by(.data[[r$group]], sex) %>% 
-      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
       ggplot(aes(reorder(.data[[r$group]], desc(rate)), rate)) +
       geom_point(aes(color = sex), size = 4, alpha = 2/3) +
       guides(x = guide_axis(angle = 25)) +
@@ -91,11 +85,7 @@ shinyServer(function(input, output, session) {
   
   output$plot_gdp <- renderPlot({
     p <- r$df %>% 
-      filter(year == input$s_year, !is.na(gdp_ppp)) %>% 
-      group_by(.data[[r$group]]) %>% 
-      summarise(gdp_ppp = median(gdp_ppp, na.rm = T),
-                pop = sum(pop),
-                rate = 100*sum(cases)/pop, .groups = "drop")  %>% 
+      filter(sex == "BTSX", year == input$s_year, !is.na(gdp_ppp)) %>% 
       ggplot(aes(gdp_ppp, rate)) +
       geom_point(aes(color = .data[[r$group]], size = pop), alpha = 2/3) +
       guides(size = "none") +
@@ -109,22 +99,9 @@ shinyServer(function(input, output, session) {
     uniform_plot(p,nvars)
   })
   
-  output$plot_histogram <- renderPlot({
-    hom_btsx_gdp %>% 
-      filter(year == MAX_YR) %>% 
-      group_by(country) %>% 
-      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
-      ggplot(aes(rate)) +
-      geom_histogram(binwidth = 4, fill = COLOR_BLUE, alpha = 2/3) +
-      labs(x = "homicides per 100,000",
-           title = MAX_YR) +
-      theme_minimal()
-  }) 
-  
   output$plot_overall <- renderPlot({
-    p <- hom_btsx_gdp %>% 
+    p <- data_country %>% 
       group_by(region, country, year) %>% 
-      summarise(rate = 100*sum(cases)/sum(pop), .groups = "drop") %>% 
       ggplot(aes(year, rate)) +
       geom_line(aes(group = country), color = "gray") +
       geom_smooth(aes(color = reorder(region, desc(rate))), se = FALSE) +
@@ -133,12 +110,21 @@ shinyServer(function(input, output, session) {
     uniform_plot(p)
   })
   
+  output$plot_histogram <- renderPlot({
+    data_country %>% 
+      filter(year == MAX_YR) %>% 
+      group_by(country) %>% 
+      ggplot(aes(rate)) +
+      geom_histogram(binwidth = 4, fill = COLOR_BLUE, alpha = 2/3) +
+      labs(x = "homicides per 100,000",
+           title = MAX_YR) +
+      theme_minimal()
+  })
+  
   output$map_choropleth <- renderLeaflet({
-    
-    rates <- hom_btsx_gdp %>% 
+    rates <- data_country %>% 
       filter(year == MAX_YR) %>% 
       group_by(iso3) %>% 
-      summarise(rate = round(100*sum(cases)/sum(pop),2)) %>% 
       select(iso3,rate)
     
     world_sf <- left_join(world_sf, rates, by = c("GID_0" = "iso3"))
@@ -171,7 +157,5 @@ shinyServer(function(input, output, session) {
                 title = paste(MAX_YR, "homicides <br> per 100,000"),
                 na.label = "No data",
                 opacity = 1)
-    
   })
-  
 })
