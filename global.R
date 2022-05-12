@@ -4,8 +4,13 @@ library(dplyr)
 library(leaflet)
 
 # Data -----------------------------------------------------
-data_country_s  <-  readRDS("data/data_country_s.rds")
-data_country <- data_country_s %>% filter(sex == "BTSX")
+data_country_s  <-  
+  readRDS("data/data_country_s.rds") %>% 
+  mutate(rate = round(100*cases/pop,2))
+
+data_country <- data_country_s %>% 
+  filter(sex == "BTSX")
+
 data_region_s <- data_country_s %>% 
   group_by(region, year, sex) %>% 
   summarise(pop = sum(pop), 
@@ -20,10 +25,14 @@ world_sf <- readRDS("data/gadm36_adm0_r5_pk.rds") %>%
   sf::st_as_sf() %>% 
   sf::st_transform(crs = "+proj=longlat +datum=WGS84")
 
-# Global ---------------------------------------------------
+# Data fixed -----------------------------------------------
 MAX_YR <- max(data_country_s$year)
 MIN_YR <- min(data_country_s$year)
 REGIONS <- unique(data_country_s$region)
+
+# Labels ---------------------------------------------------
+LBL_RATE <- "homicides per 100,00"
+LBL_GDP <- "GDP per capita, PPP, in current international $"
 
 # Colors ---------------------------------------------------
 COLOR_BLUE <- "#428bca"

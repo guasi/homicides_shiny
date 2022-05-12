@@ -2,19 +2,18 @@ shinyServer(function(input, output, session) {
 
   uniform_plot <- function(p,ns = 1) {
     p + 
-    labs(y = "homicides per 100,000") +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 1), 
           legend.position = ifelse(ns <= 15, "bottom", "none"))
   }
   
-  # initialize selections
+  # initialize select inputs
   r <- reactiveValues(
     group = sym("region"),
     df = data_region_s
   )
 
-  # update reactive values upon region and tab selected
+  # update reactive values upon region selected
   observeEvent(c(input$s_region,input$s_country), {
     if (is.null(input$s_region)) {
       r$group <- sym("region")
@@ -28,9 +27,7 @@ shinyServer(function(input, output, session) {
   # update country select upon region selected
   observe({
     ranked <- data_country %>% 
-      filter(region %in% input$s_region) %>% 
-      group_by(country) %>% 
-      summarise(rate = median(rate), .groups = "drop") %>% 
+      filter(year == MAX_YR, region %in% input$s_region) %>% 
       mutate(rank = rank(rate)) %>% 
       arrange(desc(rank)) %>% 
       .$country
@@ -40,7 +37,7 @@ shinyServer(function(input, output, session) {
                       selected = slctd)
   })
   
-  #update region select upon button click
+  # update region select upon button click
   observeEvent(input$b_clear, {
     updateSelectInput(session, "s_region", selected = character(0))
   })
@@ -51,7 +48,7 @@ shinyServer(function(input, output, session) {
       ggplot(aes(reorder(.data[[r$group]], rate), rate)) +
       geom_bar(stat = "identity", fill = COLOR_BLUE, alpha = 2/3) +
       coord_flip() +
-      labs(x = NULL,
+      labs(x = NULL, y = LBL_RATE,
            title = MAX_YR)
     uniform_plot(p)
   })
@@ -61,9 +58,8 @@ shinyServer(function(input, output, session) {
       filter(sex == "BTSX") %>% 
       ggplot(aes(year, rate)) +
       geom_line(aes(color = reorder(.data[[r$group]], desc(rate)))) +
-      labs(x = NULL,
-           title = paste(MIN_YR, "to", MAX_YR),
-           color = NULL)
+      labs(x = NULL, y = LBL_RATE, color = NULL,
+           title = paste(MIN_YR, "to", MAX_YR))
     nvars <- n_distinct(r$df[[r$group]])
     uniform_plot(p,nvars)
   })
@@ -77,9 +73,8 @@ shinyServer(function(input, output, session) {
       scale_color_discrete(labels = c("BTSX" = "Both sexes", 
                                       "FMLE" = "Female",
                                       "MLE" = "Male")) +
-      labs(x = NULL,
-           title = MAX_YR,
-           color = NULL) 
+      labs(x = NULL, y = LBL_RATE, color = NULL,
+           title = MAX_YR) 
     uniform_plot(p)
   })
   
@@ -92,33 +87,28 @@ shinyServer(function(input, output, session) {
       scale_x_continuous(limits = c(250,142e3)) +
       scale_y_continuous(limits = c(0,100)) +
       scale_size_continuous(range = c(1,15)) +
-      labs(x = "GDP per capita, PPP, in current international $",
-           title = input$s_year,
-           color = NULL)
+      labs(y = LBL_RATE, x = LBL_GDP, color = NULL,
+           title = input$s_year)
     nvars <- n_distinct(r$df[[r$group]])
     uniform_plot(p,nvars)
   })
   
-  output$plot_overall <- renderPlot({
+  output$plot_density <- renderPlot({
     p <- data_country %>% 
-      group_by(region, country, year) %>% 
-      ggplot(aes(year, rate)) +
-      geom_line(aes(group = country), color = "gray") +
-      geom_smooth(aes(color = reorder(region, desc(rate))), se = FALSE) +
-      labs(title = paste(MIN_YR,"to",MAX_YR),
-           color = NULL)
+      ggplot(aes(rate, colour = region, fill = region)) + 
+      geom_density(alpha = 1/4) +
+      labs(x = LBL_RATE, color = NULL, fill = NULL,
+           title = paste(MIN_YR,"to",MAX_YR)) 
     uniform_plot(p)
   })
   
-  output$plot_histogram <- renderPlot({
-    data_country %>% 
-      filter(year == MAX_YR) %>% 
-      group_by(country) %>% 
-      ggplot(aes(rate)) +
-      geom_histogram(binwidth = 4, fill = COLOR_BLUE, alpha = 2/3) +
-      labs(x = "homicides per 100,000",
-           title = MAX_YR) +
-      theme_minimal()
+  output$plot_violin <- renderPlot({
+    p <- data_country %>% 
+      ggplot(aes(rate, region)) + 
+      geom_violin(alpha = 1/3, fill = COLOR_BLUE, color = COLOR_BLUE) +
+      labs(x = LBL_RATE, y = NULL,
+           title = paste(MIN_YR,"to",MAX_YR)) 
+    uniform_plot(p)
   })
   
   output$map_choropleth <- renderLeaflet({
@@ -154,7 +144,7 @@ shinyServer(function(input, output, session) {
       addLegend("bottomleft", 
                 pal = pal, 
                 values = ~rate,
-                title = paste(MAX_YR, "homicides <br> per 100,000"),
+                title = paste0(MAX_YR, "<br/>", LBL_RATE),
                 na.label = "No data",
                 opacity = 1)
   })

@@ -72,8 +72,7 @@ gdp <-
 data_country_s <- homicides %>% 
   left_join(population) %>% 
   left_join(gdp) %>% 
-  mutate(rate = round(100*cases/pop,2)) %>% 
-  select(iso3, m49, country, region, year, sex, cases, pop, rate, gdp_ppp)
+  select(iso3, m49, country, region, year, sex, cases, pop, gdp_ppp)
 
 saveRDS(data_country_s,"data/data_country_s.rds")
 

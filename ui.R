@@ -4,7 +4,7 @@ shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      conditionalPanel(condition = "input.tabs != 'Overall' & input.tabs != 'Map'",
+      conditionalPanel(condition = "input.tabs != 'Regional' & input.tabs != 'Map'",
         selectInput("s_region","Region",
                     choices = REGIONS,
                     selected = NULL,
@@ -18,8 +18,9 @@ shinyUI(fluidPage(
         checkboxInput("ck_all", "Select all countries", value = F),
         actionButton("b_clear","clear filters", class = "btn-warning btn-sm")
       ),
-      conditionalPanel(condition = "input.tabs == 'Overall' | input.tabs == 'Map'",
-        p("Homicide rates seem to be lowering in all regions except in the Americas, where rates have stayed the same for the last twenty years. A handfull of countries in the world have extremely high rates.")
+      conditionalPanel(condition = "input.tabs == 'Regional' | input.tabs == 'Map'",
+        p("The historical chart shows homicide rates seem to be declining in all regions except in the Americas, where rates have stayed the same for the last twenty years."),
+        p("The density charts differentiate the distribution by region, which can also be seen on the map.")
       )
     ),
     
@@ -38,9 +39,9 @@ shinyUI(fluidPage(
                              value = MIN_YR,
                              sep = "",
                              animate = T))),
-        tabPanel("Overall",
-                 plotOutput("plot_overall"),
-                 plotOutput("plot_histogram")),
+        tabPanel("Regional",
+                 plotOutput("plot_density"),
+                 plotOutput("plot_violin")),
         tabPanel("Map",leafletOutput("map_choropleth"))
       ),
       HTML("<hr><small>Sources:
