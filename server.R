@@ -87,7 +87,7 @@ shinyServer(function(input, output, session) {
       scale_x_continuous(limits = c(250,142e3)) +
       scale_y_continuous(limits = c(0,100)) +
       scale_size_continuous(range = c(1,15)) +
-      labs(y = LBL_RATE, x = LBL_GDP, color = NULL,
+      labs(x = LBL_GDP, y = LBL_RATE, color = NULL,
            title = input$s_year)
     nvars <- n_distinct(r$df[[r$group]])
     uniform_plot(p,nvars)
