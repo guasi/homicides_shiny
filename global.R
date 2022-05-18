@@ -2,6 +2,7 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(leaflet)
+library(shinythemes)
 
 # Data -----------------------------------------------------
 data_country_s  <-  
