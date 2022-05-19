@@ -1,0 +1,5 @@
+.loading-spinner {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/gif;base64,R0lGODlhGAAYAJEAAP///9nZ2SF1yP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQFKAADACwAAAAAGAAYAAACQJSPoxPtj6JY7FmZlr3Y0A11kwY24qiUpvipZ1u+ZMzOIIXn+s73/g/0qQKw4c1mtBSTjyWz4XxGmdNk1XgdXgsAIfkEBSgAAwAsAAAAABgACgAAAiKMj6Mj7Y9iWOxZmZa92NANdZMGNuKolKb4qWdbvmTMzmABACH5BAUoAAMALA4AAAAKABgAAAIYjI+py+0PYxu02ouztqL7D4biSJbmiZIFACH5BAkoAAMALAAAAAAYABgAAAI0nI+py+0Po5y02ouz3rw/AYYiEpTmKaYCebbqeLTuC7JySdfxjef2nVvteMGfrDgE+pKyAgA7");
+}
