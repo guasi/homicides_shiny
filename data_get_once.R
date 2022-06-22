@@ -1,6 +1,7 @@
 library(ggplot2)
 library(dplyr)
 library(readr)
+library(fst)
 
 # GHO homicide estimates indicator
 # https://ghoapi.azureedge.net/api/VIOLENCE_HOMICIDENUM
@@ -74,6 +75,5 @@ data_country_s <- homicides %>%
   left_join(gdp) %>% 
   select(iso3, m49, country, region, year, sex, cases, pop, gdp_ppp)
 
-saveRDS(data_country_s,"data/data_country_s.rds")
-
-rm(countries,m49iso3,population,gdp,homicides)
+write.fst(data_country_s,"data/data_country_s.fst")
+rm(countries, m49iso3, population, gdp, homicides)

@@ -2,10 +2,11 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(leaflet)
+library(fst)
 
 # Data -----------------------------------------------------
 data_country_s  <-  
-  readRDS("data/data_country_s.rds") %>% 
+  read.fst("data/data_country_s.fst") %>% 
   mutate(rate = round(100*cases/pop,2))
 
 data_country <- data_country_s %>% 
